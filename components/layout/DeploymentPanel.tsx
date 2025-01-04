@@ -13,6 +13,12 @@ interface DeploymentPanelProps {
   onServiceTypeChange: (type: 'MANUAL' | 'AUTO') => void
 }
 
+const durationPricing = [
+  { days: 30, price: 100, discount: 0 },
+  { days: 60, price: 180, discount: 10 },
+  { days: 90, price: 240, discount: 20 },
+]
+
 export default function DeploymentPanel({
   selectedNode,
   quantity,
@@ -50,7 +56,7 @@ export default function DeploymentPanel({
       <div className="mb-6">
         <label className="text-gray-400 mb-2 block">Duration</label>
         <div className="grid grid-cols-3 gap-4">
-          {[30, 60, 90].map((days) => (
+          {durationPricing.map(({ days, price, discount }) => (
             <button
               key={days}
               onClick={() => onDurationChange(days)}
@@ -61,7 +67,13 @@ export default function DeploymentPanel({
               }`}
             >
               <Clock className="w-4 h-4 mb-1" />
-              <span>{days} Days</span>
+              <span className="font-semibold">{days} Days</span>
+              <div className="mt-1 text-sm">
+                <span className="font-medium">${price}</span>
+                {discount > 0 && (
+                  <span className="ml-1 text-green-400">(-{discount}%)</span>
+                )}
+              </div>
             </button>
           ))}
         </div>
