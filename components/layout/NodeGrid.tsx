@@ -48,7 +48,7 @@ export default function NodeGrid({ selectedNode, onSelectNode }: NodeGridProps) 
           onClick={() => onSelectNode(node.id)}
           className={`relative p-3 rounded-xl border-2 transition-colors ${
             selectedNode === node.id
-              ? 'border-[#26890d] bg-[#1A1A1A]'
+              ? 'border-[rgb(59_130_246)] bg-[#1A1A1A]'
               : 'border-gray-800 bg-[#1A1A1A] hover:border-gray-700'
           }`}
         >
@@ -66,7 +66,7 @@ export default function NodeGrid({ selectedNode, onSelectNode }: NodeGridProps) 
               <p className="text-xs text-gray-400">${node.price}/month</p>
             </div>
             <Server className={`w-4 h-4 ${
-              selectedNode === node.id ? 'text-[#26890d]' : 'text-gray-400'
+              selectedNode === node.id ? 'text-[rgb(59_130_246)]' : 'text-gray-400'
             }`} />
           </div>
         </motion.button>
