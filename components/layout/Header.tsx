@@ -18,7 +18,7 @@ export default function Header() {
           
           {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/deploy" className="text-white hover:text-green-400">
+            <Link href="/deploy" className="text-white hover:text-[#26890d]">
               DEPLOY NODES
             </Link>
             <Link href="/my-nodes" className="text-gray-400 hover:text-white">
@@ -43,7 +43,7 @@ export default function Header() {
             </a>
           </div>
           
-          <button className="flex items-center px-4 py-2 bg-green-500 hover:bg-green-600 rounded-lg text-white">
+          <button className="flex items-center px-4 py-2 bg-[#26890d] hover:bg-[#1d6a0a] rounded-lg text-white">
             <Wallet className="w-4 h-4 mr-2" />
             Connect Wallet
           </button>

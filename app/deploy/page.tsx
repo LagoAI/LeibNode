@@ -16,7 +16,7 @@ export default function DeployPage() {
   return (
     <div className="min-h-screen bg-black pt-[60px]">
       {/* Promotional Banner */}
-      <div className="bg-green-500 text-white text-center py-2">
+      <div className="bg-[#26890d] text-white text-center py-2">
         <p className="text-sm">🎉 Limited Time Offer: 60% savings on all node deployments!</p>
       </div>
 

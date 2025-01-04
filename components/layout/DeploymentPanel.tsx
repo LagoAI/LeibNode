@@ -62,7 +62,7 @@ export default function DeploymentPanel({
               onClick={() => onDurationChange(days)}
               className={`p-3 rounded-lg flex flex-col items-center ${
                 duration === days
-                  ? 'bg-green-500 text-white'
+                  ? 'bg-[#26890d] text-white'
                   : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
               }`}
             >
@@ -87,7 +87,7 @@ export default function DeploymentPanel({
             onClick={() => onServiceTypeChange('MANUAL')}
             className={`p-3 rounded-lg flex items-center justify-center ${
               serviceType === 'MANUAL'
-                ? 'bg-green-500 text-white'
+                ? 'bg-[#26890d] text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
@@ -98,7 +98,7 @@ export default function DeploymentPanel({
             onClick={() => onServiceTypeChange('AUTO')}
             className={`p-3 rounded-lg flex items-center justify-center ${
               serviceType === 'AUTO'
-                ? 'bg-green-500 text-white'
+                ? 'bg-[#26890d] text-white'
                 : 'bg-gray-800 text-gray-400 hover:bg-gray-700'
             }`}
           >
@@ -113,7 +113,7 @@ export default function DeploymentPanel({
         disabled={!selectedNode}
         className={`w-full py-3 rounded-lg text-white font-semibold ${
           selectedNode
-            ? 'bg-green-500 hover:bg-green-600'
+            ? 'bg-[#26890d] hover:bg-[#1d6a0a]'
             : 'bg-gray-800 cursor-not-allowed'
         }`}
       >
