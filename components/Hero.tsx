@@ -1,10 +1,13 @@
 'use client'
 
+import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import Image from 'next/image'
 import AnimatedButton from '@/components/animations/AnimatedButton'
 
 export default function Hero() {
+  const router = useRouter()
+
   return (
     <section className="relative min-h-[90vh] flex items-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       <div className="absolute inset-0 opacity-20">
@@ -33,7 +36,10 @@ export default function Hero() {
               Deploy and scale your AI models instantly. Start building the future with zero infrastructure headaches.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <AnimatedButton variant="primary">
+              <AnimatedButton 
+                variant="primary"
+                onClick={() => router.push('/deploy')}
+              >
                 Start Building
               </AnimatedButton>
               <AnimatedButton variant="outline">
@@ -62,4 +68,4 @@ export default function Hero() {
       </div>
     </section>
   )
-}
+} 
