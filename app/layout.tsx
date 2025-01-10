@@ -1,13 +1,15 @@
-import './globals.css'
+import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import './globals.css'
+import AuthGuard from '@/components/auth/AuthGuard'
 import { Providers } from './providers'
 import MainNav from '@/components/layout/MainNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata = {
-  title: 'LeibNode - Node Deployment Platform',
-  description: 'Deploy and manage your blockchain nodes with ease',
+export const metadata: Metadata = {
+  title: 'LeibNode',
+  description: 'Deploy your nodes with ease',
 }
 
 export default function RootLayout({
@@ -19,10 +21,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
-          <MainNav />
-          <main>
-            {children}
-          </main>
+          <AuthGuard>
+            <MainNav />
+            <main>{children}</main>
+          </AuthGuard>
         </Providers>
       </body>
     </html>
