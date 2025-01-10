@@ -2,7 +2,7 @@ import { OrderRequest, OrderResponse, PaymentConfirmation } from '@/types/order'
 
 class PaymentService {
   private static instance: PaymentService
-  private readonly API_BASE_URL = 'http://111.230.186.213:1314'
+  private readonly API_BASE_URL = 'http://43.134.94.194:1314'
 
   private constructor() {}
 

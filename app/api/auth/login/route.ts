@@ -9,7 +9,7 @@ export async function POST(request: Request) {
 
     console.log('Making request to external API...')
     // Forward the request to the actual API
-    const response = await fetch('http://111.230.186.213:1314/user/login', {
+    const response = await fetch('http://43.134.94.194:1314/user/login', {
       method: 'POST',
       body: formData,
       headers: {

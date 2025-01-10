@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     const deployData = await request.json()
 
     // Forward the request to the actual API with the auth header
-    const response = await fetch('http://111.230.186.213:1314/user/login', {
+    const response = await fetch('http://43.134.94.194:1314/user/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

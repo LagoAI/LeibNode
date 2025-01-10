@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/auth'
-import { paymentService } from '@/lib/services/payment'
+import { mockPaymentService } from '@/lib/services/mockPayment'
 import { PaymentStatus, OrderResponse } from '@/types/order'
+import Web3 from 'web3'
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -33,6 +34,7 @@ export default function PaymentModal({
   const [error, setError] = useState('')
   const [orderDetails, setOrderDetails] = useState<OrderResponse | null>(null)
   const [selectedWallet, setSelectedWallet] = useState<'metamask' | 'okx' | null>(null)
+  const [walletAddress, setWalletAddress] = useState<string | null>(null)
 
   useEffect(() => {
     if (isOpen && status === 'idle') {
@@ -49,17 +51,17 @@ export default function PaymentModal({
     try {
       const orderData = {
         pid: projectId,
-        mail: 'user@example.com', // Get from auth context
+        mail: 'test@example.com',
         status: 'pending' as const,
         nodeName,
         duration,
         payamount: amount,
         nodeNum: quantity,
         manual_Information: manualInfo,
-        payChianName: 'SOL', // Or get from user selection
+        payChianName: 'ETH',
       }
 
-      const response = await paymentService.createOrder(orderData)
+      const response = await mockPaymentService.createOrder(orderData)
       setOrderDetails(response)
       setStatus('awaiting_payment')
     } catch (err) {
@@ -68,21 +70,135 @@ export default function PaymentModal({
     }
   }
 
-  const handleWalletSelect = async (wallet: 'metamask' | 'okx') => {
-    setSelectedWallet(wallet)
-    if (!orderDetails) return
+  const connectMetaMask = async () => {
+    console.log('Attempting to connect to MetaMask...')
+    
+    if (typeof window === 'undefined') {
+      console.log('Window object not available')
+      return false
+    }
+
+    if (!window.ethereum) {
+      console.log('MetaMask not found in window.ethereum')
+      setError('MetaMask not found. Please install MetaMask first.')
+      return false
+    }
 
     try {
+      console.log('Requesting MetaMask accounts...')
+      const accounts = await window.ethereum.request({ 
+        method: 'eth_requestAccounts',
+        params: [] 
+      })
+      console.log('Received accounts:', accounts)
+
+      if (!accounts || accounts.length === 0) {
+        console.log('No accounts returned')
+        setError('No accounts found in MetaMask')
+        return false
+      }
+
+      setWalletAddress(accounts[0])
+      console.log('Successfully connected to account:', accounts[0])
+      return true
+    } catch (err: any) {
+      console.error('MetaMask connection error details:', {
+        code: err.code,
+        message: err.message,
+        stack: err.stack,
+        fullError: JSON.stringify(err, Object.getOwnPropertyNames(err))
+      })
+
+      // Handle specific MetaMask error codes
+      if (err.code === 4001) {
+        setError('Connection rejected. Please approve the MetaMask connection request.')
+      } else if (err.code === -32002) {
+        setError(`MetaMask connection already pending. Please:
+1. Check for an existing MetaMask popup
+2. Open MetaMask manually if no popup is visible
+3. Complete or reject any pending requests
+4. Try connecting again`)
+      } else if (err.code === 4902) {
+        setError('MetaMask is not connected to this network. Please check your network settings.')
+      } else {
+        setError(`Connection failed: ${err.message || 'Unknown error'}`)
+      }
+      return false
+    }
+  }
+
+  const connectOKX = async () => {
+    if (!window.okxwallet) {
+      setError('OKX Wallet not found. Please install OKX Wallet first.')
+      return false
+    }
+
+    try {
+      // Request account access
+      await window.okxwallet.request({ method: 'eth_requestAccounts' })
+      const accounts = await window.okxwallet.request({ method: 'eth_accounts' })
+      setWalletAddress(accounts[0])
+      return true
+    } catch (err) {
+      setError('Failed to connect to OKX Wallet')
+      return false
+    }
+  }
+
+  const handleWalletSelect = async (wallet: 'metamask' | 'okx') => {
+    console.log('Wallet selected:', wallet)
+    setSelectedWallet(wallet)
+    if (!orderDetails) {
+      console.log('No order details available')
+      return
+    }
+
+    try {
+      // Connect to selected wallet
+      console.log('Attempting to connect to wallet...')
+      const connected = await (wallet === 'metamask' ? connectMetaMask() : connectOKX())
+      console.log('Wallet connection result:', connected)
+      
+      if (!connected) {
+        console.log('Failed to connect to wallet')
+        return
+      }
+
       setStatus('confirming')
-      const txHash = await paymentService.sendTransaction(
-        orderDetails.receive,
-        orderDetails.amount,
-        'SOL' // Or get from user selection
-      )
+      
+      // Get the appropriate provider
+      const provider = wallet === 'metamask' ? window.ethereum : window.okxwallet
+      if (!provider) {
+        const errorMsg = `${wallet === 'metamask' ? 'MetaMask' : 'OKX Wallet'} not found`
+        console.log(errorMsg)
+        setError(errorMsg)
+        setStatus('error')
+        return
+      }
+
+      console.log('Setting up Web3...')
+      const web3 = new Web3(provider)
+
+      // Convert amount to Wei
+      const amountInWei = web3.utils.toWei(orderDetails.amount.toString(), 'ether')
+      console.log('Amount in Wei:', amountInWei)
+
+      // Send transaction
+      console.log('Preparing transaction...')
+      const txHash = await provider.request({
+        method: 'eth_sendTransaction',
+        params: [{
+          from: walletAddress,
+          to: orderDetails.receive,
+          value: web3.utils.numberToHex(amountInWei),
+          gas: '0x5208', // 21000 gas
+        }],
+      })
+      console.log('Transaction hash:', txHash)
 
       // Start polling for payment confirmation
       let attempts = 0
-      const maxAttempts = 60 // 10 minutes with 10-second intervals
+      const maxAttempts = 30 // 5 minutes with 10-second intervals
       const pollInterval = 10000 // 10 seconds
 
       const pollPayment = async () => {
@@ -93,10 +209,10 @@ export default function PaymentModal({
         }
 
         try {
-          const confirmation = await paymentService.confirmPayment(
+          const confirmation = await mockPaymentService.confirmPayment(
             orderDetails.orderId,
             txHash,
-            await window.ethereum.request({ method: 'eth_accounts' })[0]
+            walletAddress || ''
           )
 
           if (confirmation.code === 0) {
@@ -120,6 +236,7 @@ export default function PaymentModal({
       // Start polling
       pollPayment()
     } catch (err) {
+      console.error('Transaction error:', err)
       setError(err instanceof Error ? err.message : 'Failed to process payment')
       setStatus('error')
     }
@@ -181,7 +298,7 @@ export default function PaymentModal({
                   </button>
                 </div>
                 <div className="mt-4 text-sm text-gray-500">
-                  <p>Amount: {orderDetails.amount} SOL</p>
+                  <p>Amount: {orderDetails.amount} ETH</p>
                   <p className="mt-1">Payment Address:</p>
                   <p className="font-mono text-xs break-all">{orderDetails.receive}</p>
                 </div>
@@ -194,7 +311,7 @@ export default function PaymentModal({
                 <p className="mt-2 text-sm text-gray-500">
                   Confirming your payment...
                   <br />
-                  This may take up to 10 minutes
+                  Please confirm the transaction in your wallet
                 </p>
               </div>
             )}

@@ -1,28 +1,17 @@
-import { create, StateCreator } from 'zustand'
-import { persist, createJSONStorage, PersistOptions } from 'zustand/middleware'
+import { create } from 'zustand'
+import { persist, createJSONStorage } from 'zustand/middleware'
 
 interface AuthState {
   apiKey: string | null
-  setApiKey: (apiKey: string | null) => void
   isAuthenticated: boolean
+  setApiKey: (apiKey: string | null) => void
   login: (email: string, password: string) => Promise<void>
   logout: () => void
 }
 
-interface LoginResponse {
-  apikey: string
-  code: number
-  limit: string
-}
-
-type AuthPersist = (
-  config: StateCreator<AuthState>,
-  options: PersistOptions<AuthState>
-) => StateCreator<AuthState>
-
 export const useAuth = create<AuthState>()(
-  (persist as AuthPersist)(
-    (set: any) => ({
+  persist(
+    (set) => ({
       apiKey: null,
       isAuthenticated: false,
 
@@ -34,41 +23,25 @@ export const useAuth = create<AuthState>()(
       login: async (email: string, password: string) => {
         try {
           console.log('Starting login process...')
+          
           const formData = new FormData()
           formData.append('mail', email)
           formData.append('password', password)
 
-          console.log('Making login request...')
           const response = await fetch('/api/auth/login', {
             method: 'POST',
-            body: formData,
+            body: formData
           })
 
-          console.log('Login response status:', response.status)
-          const responseText = await response.text()
-          console.log('Login response text:', responseText)
-
-          if (!response.ok) {
-            throw new Error(`Login failed: ${responseText}`)
-          }
-
-          let data: LoginResponse
-          try {
-            data = JSON.parse(responseText)
-          } catch (e) {
-            console.error('Failed to parse login response:', e)
-            throw new Error('Invalid response format')
-          }
-
-          console.log('Parsed login response:', data)
+          const data = await response.json()
           
           if (data.code !== 0) {
-            throw new Error(`Login failed with code: ${data.code}`)
+            throw new Error(data.message || 'Authentication failed')
           }
 
-          console.log('Setting auth state...')
+          console.log('Login successful, setting state...')
           set({ apiKey: data.apikey, isAuthenticated: true })
-          console.log('Login successful, auth state updated')
+          console.log('State updated')
         } catch (error) {
           console.error('Login error:', error)
           throw error
@@ -83,8 +56,10 @@ export const useAuth = create<AuthState>()(
     }),
     {
       name: 'auth-storage',
-      storage: createJSONStorage(() => sessionStorage),
-      skipHydration: true,
+      storage: createJSONStorage(() => localStorage),
+      onRehydrateStorage: () => (state) => {
+        console.log('Hydrating auth state:', state)
+      }
     }
   )
 ) 

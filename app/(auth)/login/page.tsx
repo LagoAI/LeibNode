@@ -1,13 +1,12 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { useAuth } from '@/lib/auth'
 
 export default function LoginPage() {
-  const router = useRouter()
   const searchParams = useSearchParams()
-  const { login, isAuthenticated } = useAuth()
+  const { login, isAuthenticated, apiKey } = useAuth()
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [isHydrated, setIsHydrated] = useState(false)
@@ -18,6 +17,13 @@ export default function LoginPage() {
   useEffect(() => {
     setIsHydrated(true)
   }, [])
+
+  useEffect(() => {
+    if (isHydrated && isAuthenticated && apiKey) {
+      // Use window.location for hard navigation
+      window.location.href = returnUrl
+    }
+  }, [isAuthenticated, apiKey, isHydrated, returnUrl])
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -31,11 +37,8 @@ export default function LoginPage() {
       const email = formData.get('email') as string
       const password = formData.get('password') as string
 
-      console.log('Submitting login form...')
       await login(email, password)
-      
-      console.log('Login successful, redirecting to:', returnUrl)
-      // Force a hard navigation
+      // After successful login, force navigation
       window.location.href = returnUrl
     } catch (err) {
       console.error('Login form error:', err)
@@ -43,6 +46,18 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Don't render the form if already authenticated
+  if (isAuthenticated && apiKey && isHydrated) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
+          <div className="text-gray-500">Redirecting...</div>
+        </div>
+      </div>
+    )
   }
 
   if (!isHydrated) {

@@ -38,8 +38,10 @@ export function middleware(request: NextRequest) {
   if (authToken) {
     try {
       const authData = JSON.parse(authToken.value)
-      isAuthenticated = authData.state && authData.state.isAuthenticated
+      isAuthenticated = authData.state && authData.state.isAuthenticated && authData.state.apiKey
+      console.log('Auth check:', { isAuthenticated, state: authData.state })
     } catch (e) {
+      console.error('Auth parse error:', e)
       isAuthenticated = false
     }
   }
@@ -66,6 +68,7 @@ export function middleware(request: NextRequest) {
         },
       })
     } catch (e) {
+      console.error('API auth error:', e)
       return NextResponse.redirect(new URL('/login', request.url))
     }
   }
