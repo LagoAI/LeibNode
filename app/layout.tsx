@@ -1,13 +1,13 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
 import './globals.css'
-import PageTransition from '@/components/animations/PageTransition'
+import { Inter } from 'next/font/google'
+import { Providers } from './providers'
+import MainNav from '@/components/layout/MainNav'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata: Metadata = {
-  title: 'Lieb.AI - AI-Powered Infrastructure',
-  description: 'Next-generation AI infrastructure and deployment platform',
+export const metadata = {
+  title: 'LeibNode - Node Deployment Platform',
+  description: 'Deploy and manage your blockchain nodes with ease',
 }
 
 export default function RootLayout({
@@ -18,9 +18,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <PageTransition>
-          {children}
-        </PageTransition>
+        <Providers>
+          <MainNav />
+          <main>
+            {children}
+          </main>
+        </Providers>
       </body>
     </html>
   )

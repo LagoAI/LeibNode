@@ -14,13 +14,13 @@ export default function DeployPage() {
   const [serviceType, setServiceType] = useState<'MANUAL' | 'AUTO'>('MANUAL')
 
   return (
-    <div className="min-h-screen bg-black pt-[60px]">
+    <div className="min-h-screen bg-black">
       {/* Promotional Banner */}
       <div className="bg-[rgb(59_130_246)] text-white text-center py-2">
         <p className="text-sm">🎉 Limited Time Offer: 60% savings on all node deployments!</p>
       </div>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 pt-[60px]">
         <div className="grid lg:grid-cols-12 gap-8">
           {/* Main Content Area */}
           <div className="lg:col-span-8">

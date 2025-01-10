@@ -12,6 +12,8 @@ import {
 } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth'
 
 const navigation = [
   { name: 'Overview', href: '/dashboard', icon: HomeIcon },
@@ -26,93 +28,79 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const router = useRouter()
+  const { logout } = useAuth()
   const [isSidebarOpen, setIsSidebarOpen] = useState(true)
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: 'Node ETH-01 is running at optimal performance', time: '2m ago' },
-    { id: 2, message: 'Monthly rewards distributed successfully', time: '1h ago' },
-  ])
+
+  const handleLogout = () => {
+    logout()
+    router.push('/login')
+  }
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900">
+    <div className="min-h-screen bg-gray-100">
       {/* Sidebar */}
-      <motion.aside
-        initial={false}
-        animate={{ width: isSidebarOpen ? '16rem' : '5rem' }}
-        className="fixed top-0 left-0 h-full bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 z-30"
-      >
-        <div className="p-4">
-          <div className="flex items-center justify-between">
-            <AnimatePresence>
-              {isSidebarOpen && (
-                <motion.h1
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="text-xl font-bold text-slate-900 dark:text-white"
-                >
-                  BlockNode
-                </motion.h1>
-              )}
-            </AnimatePresence>
+      <div className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform duration-300 ease-in-out`}>
+        <div className="flex flex-col h-full">
+          <div className="flex items-center justify-between h-16 px-4 border-b">
+            <Link href="/dashboard" className="text-xl font-bold text-gray-800">
+              LeibNode
+            </Link>
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="p-2 rounded-md lg:hidden hover:bg-gray-100"
             >
-              <ArrowLeftOnRectangleIcon 
-                className={`w-5 h-5 text-slate-500 transition-transform duration-200 ${
-                  !isSidebarOpen ? 'rotate-180' : ''
-                }`}
-              />
+              <span className="sr-only">Toggle sidebar</span>
+              {/* Add toggle icon */}
+            </button>
+          </div>
+
+          <nav className="flex-1 px-2 py-4 space-y-1">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="flex items-center px-2 py-2 text-sm font-medium text-gray-600 rounded-md hover:bg-gray-100 hover:text-gray-900"
+              >
+                <item.icon className="w-5 h-5 mr-3 text-gray-400" />
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+
+          <div className="p-4 border-t">
+            <button
+              onClick={handleLogout}
+              className="flex items-center w-full px-2 py-2 text-sm font-medium text-red-600 rounded-md hover:bg-red-50"
+            >
+              <ArrowLeftOnRectangleIcon className="w-5 h-5 mr-3" />
+              Logout
             </button>
           </div>
         </div>
+      </div>
 
-        <nav className="mt-4 px-2">
-          {navigation.map((item) => (
-            <Link
-              key={item.name}
-              href={item.href}
-              className="flex items-center px-2 py-3 my-1 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 group"
+      {/* Main content */}
+      <div className={`${isSidebarOpen ? 'ml-64' : 'ml-0'} transition-margin duration-300 ease-in-out`}>
+        <header className="bg-white shadow-sm">
+          <div className="flex items-center justify-between px-4 py-4">
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              className="p-2 rounded-md lg:hidden hover:bg-gray-100"
             >
-              <item.icon className="w-5 h-5 mr-3" />
-              <AnimatePresence>
-                {isSidebarOpen && (
-                  <motion.span
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                  >
-                    {item.name}
-                  </motion.span>
-                )}
-              </AnimatePresence>
-            </Link>
-          ))}
-        </nav>
-      </motion.aside>
+              <span className="sr-only">Open sidebar</span>
+              {/* Add hamburger icon */}
+            </button>
 
-      {/* Main Content */}
-      <div className={`transition-all duration-200 ${
-        isSidebarOpen ? 'ml-64' : 'ml-20'
-      }`}>
-        {/* Top Navigation */}
-        <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700">
-          <div className="flex items-center justify-between px-6 py-4">
-            <h2 className="text-xl font-semibold text-slate-900 dark:text-white">
-              Dashboard
-            </h2>
-            
-            {/* Notifications */}
-            <div className="relative">
-              <button className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
-                <BellIcon className="w-6 h-6 text-slate-500" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full" />
+            <div className="flex items-center space-x-4">
+              <button className="p-2 text-gray-400 hover:text-gray-500">
+                <BellIcon className="w-6 h-6" />
               </button>
+              {/* Add user profile dropdown here if needed */}
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
         <main className="p-6">
           {children}
         </main>
